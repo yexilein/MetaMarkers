@@ -25,9 +25,9 @@
 #' @export
 #' @importFrom data.table .N
 make_meta_markers = function(marker_lists, order_by = "auroc",
-                             fdr_threshold = 0.05, fc_threshold = 4,
+                             fdr_threshold = 0.05, fc_threshold = 2,
                              detection_threshold = 0,
-                             detailed_stats=FALSE,
+                             detailed_stats=TRUE,
                              common_genes_only=TRUE,
                              check_duplicates=FALSE) {
     if (check_duplicates) {
@@ -53,6 +53,7 @@ make_meta_markers = function(marker_lists, order_by = "auroc",
     result = data.table::as.data.table(all_markers)[, list(
         recurrence = sum(is_de),
         auroc = mean(auroc),
+        log_pval = pchisq(-2*sum(log_pval), 2*.N, lower.tail=FALSE, log.p=TRUE),
         fold_change = gmean(fold_change),
         fold_change_detection = gmean(fold_change_detection),
         expression = gmean(average_expression),

@@ -23,7 +23,7 @@
 #' @importFrom dplyr %>%
 compute_markers = function(expression, cell_type_labels,
                            group_labels = rep("all", length(cell_type_labels)),
-                           two_tailed = FALSE, tie_correction = FALSE,
+                           two_tailed = TRUE, tie_correction = FALSE,
                            genes_are_rows=TRUE) {
     cell_type_labels = as.character(cell_type_labels)
     group_labels = as.character(group_labels)
@@ -94,6 +94,7 @@ compute_markers_ = function(expression, cell_type_labels, two_tailed = FALSE,
     full_indices = as.matrix(result[, c("cell_type", "gene")])
     result = result %>% dplyr::mutate(
         auroc = aurocs$aurocs[full_indices],
+        log_pval = p_values$aurocs[full_indices],
         log_fdr = log_fdr[full_indices],
         population_size = population_size[result$cell_type],
         population_fraction = population_fraction[result$cell_type],
