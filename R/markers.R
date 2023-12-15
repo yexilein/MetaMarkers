@@ -94,7 +94,7 @@ compute_markers_ = function(expression, cell_type_labels, two_tailed = FALSE,
     full_indices = as.matrix(result[, c("cell_type", "gene")])
     result = result %>% dplyr::mutate(
         auroc = aurocs$aurocs[full_indices],
-        log_pval = p_values$aurocs[full_indices],
+        log_pval = p_values[full_indices],
         log_fdr = log_fdr[full_indices],
         population_size = population_size[result$cell_type],
         population_fraction = population_fraction[result$cell_type],
