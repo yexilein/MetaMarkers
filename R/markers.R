@@ -55,8 +55,8 @@ compute_markers = function(expression, cell_type_labels,
 }
 
 # Actual implementation of marker computation (for a given group)
-compute_markers_ = function(expression, cell_type_labels, two_tailed = FALSE,
-                            tie_correction = FALSE, genes_are_rows=TRUE) {
+compute_markers_ = function(expression, cell_type_labels, two_tailed = TRUE,
+                            tie_correction = TRUE, genes_are_rows=TRUE, fc_pseudocount=10) {
     if (is.vector(cell_type_labels)) {
         cell_type_labels = design_matrix(as.character(cell_type_labels))
     }
