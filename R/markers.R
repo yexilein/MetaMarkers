@@ -75,15 +75,16 @@ compute_markers_ = function(expression, cell_type_labels, two_tailed = TRUE,
     
     population_size = colSums(cell_type_labels)
     population_fraction = population_size / sum(population_size)
-    
-    average = average_expression(expression, cell_type_labels, pseudocount=fc_pseudocount)
-    fold_change = average$positives / average$negatives
+    negative_size = sum(population_size) - population_size
+
+    average = average_expression(expression, cell_type_labels)
+    fold_change = (average$positives + fc_pseudocount/population_size) / (average$negatives + fc_pseudocount/negative_size)
     uncentered_var = average_expression(expression**2, cell_type_labels)
     standard_error = sqrt((uncentered_var$positives - average$positives**2) / population_size)
           
     binary_expression = expression > 0
-    m_binary = average_expression(binary_expression, cell_type_labels, pseudocount=fc_pseudocount)
-    fc_binary = m_binary$positives / m_binary$negatives
+    m_binary = average_expression(binary_expression, cell_type_labels)
+    fc_binary = (m_binary$positives + fc_pseudocount/population_size) / (m_binary$negatives + fc_pseudocount/negative_size)
     n_expressing_cells = as.matrix(Matrix::crossprod(cell_type_labels, binary_expression))
     binary_precision = t(t(n_expressing_cells) / c(my_col_sums(binary_expression)))
     binary_recall = n_expressing_cells / population_size
@@ -117,14 +118,12 @@ compute_markers_ = function(expression, cell_type_labels, two_tailed = TRUE,
 }
 
 # Compute average expression for each cell type + average background expression
-average_expression = function(expression, design_matrix, pseudocount=0) {
+average_expression = function(expression, design_matrix) {
     scaled_positives = scale(design_matrix, center=FALSE, scale=colSums(design_matrix))
-    n_positives = colSums(design_matrix)
     scaled_negatives = scale(1-design_matrix, center=FALSE, scale=colSums(1-design_matrix))
-    n_negatives = colSums(1-design_matrix)
     return(list(
-        positives = as.matrix(Matrix::crossprod(scaled_positives, expression)) + pseudocount/n_positives,
-        negatives = as.matrix(Matrix::crossprod(scaled_negatives, expression)) + pseudocount/n_negatives
+        positives = as.matrix(Matrix::crossprod(scaled_positives, expression)),
+        negatives = as.matrix(Matrix::crossprod(scaled_negatives, expression))
     ))
 }
 
