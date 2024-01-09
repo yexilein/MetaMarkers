@@ -24,7 +24,7 @@
 compute_markers = function(expression, cell_type_labels,
                            group_labels = rep("all", length(cell_type_labels)),
                            two_tailed = TRUE, tie_correction = TRUE,
-                           genes_are_rows=TRUE, fc_pseudocount=10) {
+                           genes_are_rows=TRUE, fc_pseudocount=0.001) {
     cell_type_labels = as.character(cell_type_labels)
     group_labels = as.character(group_labels)
     if (any(cell_type_labels == "")) {
@@ -56,7 +56,7 @@ compute_markers = function(expression, cell_type_labels,
 
 # Actual implementation of marker computation (for a given group)
 compute_markers_ = function(expression, cell_type_labels, two_tailed = TRUE,
-                            tie_correction = TRUE, genes_are_rows=TRUE, fc_pseudocount=10) {
+                            tie_correction = TRUE, genes_are_rows=TRUE, fc_pseudocount=0.001) {
     if (is.vector(cell_type_labels)) {
         cell_type_labels = design_matrix(as.character(cell_type_labels))
     }
@@ -78,13 +78,13 @@ compute_markers_ = function(expression, cell_type_labels, two_tailed = TRUE,
     negative_size = sum(population_size) - population_size
 
     average = average_expression(expression, cell_type_labels)
-    fold_change = (average$positives + fc_pseudocount/population_size) / (average$negatives + fc_pseudocount/negative_size)
+    fold_change = (average$positives + fc_pseudocount) / (average$negatives + fc_pseudocount)
     uncentered_var = average_expression(expression**2, cell_type_labels)
     standard_error = sqrt((uncentered_var$positives - average$positives**2) / population_size)
           
     binary_expression = expression > 0
     m_binary = average_expression(binary_expression, cell_type_labels)
-    fc_binary = (m_binary$positives + fc_pseudocount/population_size) / (m_binary$negatives + fc_pseudocount/negative_size)
+    fc_binary = (m_binary$positives + fc_pseudocount) / (m_binary$negatives + fc_pseudocount)
     n_expressing_cells = as.matrix(Matrix::crossprod(cell_type_labels, binary_expression))
     binary_precision = t(t(n_expressing_cells) / c(my_col_sums(binary_expression)))
     binary_recall = n_expressing_cells / population_size
